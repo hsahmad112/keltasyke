@@ -1,2 +1,9 @@
 .md
 /data
+.env
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/

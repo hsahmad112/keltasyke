@@ -1,0 +1,8 @@
+httpx==0.28.1
+ipython_pygments_lexers==1.1.1
+jupyter_client==8.10.0
+jupyter_core==5.9.1
+pip-chill==1.0.5
+psycopg2-binary==2.9.13
+python-dotenv==1.2.3
+wget==3.2
