@@ -1,11 +1,10 @@
-version: '3.8'
-
 services:
   db:
     image: pgvector/pgvector:pg16
     container_name: main-kelta-db
-    restart: always
+    restart: unless-stopped
     environment:
+      TZ: Europe/Helsinki
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PWD}
       POSTGRES_DB: ${DB_NAME}
@@ -13,6 +12,25 @@ services:
       - "127.0.0.1:${DB_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  backend:
+    image: python:3.11-slim
+    container_name: main-kelta-backend
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PWD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PORT: 5432
+      DB_HOST: db
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend:/backend
+    working_dir: /backend
+    command: > 
+      sh -c "pip install fastapi[standard] &&
+                uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:
   pgdata:
