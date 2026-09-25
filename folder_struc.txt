@@ -1,5 +1,4 @@
-# folder strucure 
-## hella wip
+hella wip - outlines the structure tho
 
 keltasyke - root
 
