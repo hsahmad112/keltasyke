@@ -45,13 +45,14 @@ CREATE TABLE IF NOT EXISTS trips (
     service_id TEXT,
     trip_headsign text,
     direction_id SMALLINT,
-    block_id INTEGER,
+    block_id TEXT,
     shape_id TEXT,
     wheelchair_accessible SMALLINT,
     bikes_allowed SMALLINT,
     
-    PRIMARY KEY (trip_id),
-    FOREIGN KEY (route_id) REFERENCES routes(route_id));
+    PRIMARY KEY (trip_id)
+    --FOREIGN KEY (route_id) REFERENCES routes(route_id)
+    );
 
 
 
@@ -62,10 +63,10 @@ CREATE TABLE IF NOT EXISTS trip_notes (
     trip_id text NOT NULL, 
     abbreviation text, 
     description text, 
-    language text NOT NULL,
+    lang text NOT NULL,
 
-    PRIMARY KEY (trip_id, language),
-    FOREIGN KEY (trip_id) REFERENCES trips(trip_id)
+    PRIMARY KEY (trip_id, lang, abbreviation)
+    --FOREIGN KEY (trip_id) REFERENCES trips(trip_id)
 );
 
 
@@ -73,7 +74,7 @@ CREATE TABLE IF NOT EXISTS trip_notes (
 -- columns:stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code
 
 CREATE TABLE IF NOT EXISTS stops(
-    stop_id TEXT NOT NULL, 
+    stop_id INTEGER NOT NULL, 
     stop_code TEXT,
     stop_name VARCHAR(100),
     stop_desc text,
@@ -100,7 +101,7 @@ CREATE TABLE IF NOT EXISTS stop_times(
     trip_id text NOT NULL,
     arrival_time VARCHAR(8), -- this and departure_time goes past midnight, will need to parsed post pull from db
     departure_time VARCHAR(8),
-    stop_id text,
+    stop_id INTEGER,
     stop_sequence INTEGER NOT NULL,
     stop_headsign VARCHAR(150),
     pickup_type INTEGER,
@@ -108,9 +109,9 @@ CREATE TABLE IF NOT EXISTS stop_times(
     shape_dist_traveled INTEGER,
     timepoint INTEGER,
 
-    PRIMARY KEY (trip_id, stop_sequence),
-    FOREIGN KEY (trip_id) REFERENCES trips(trip_id),
-    FOREIGN KEY (stop_id) REFERENCES stops(stop_id)
+    PRIMARY KEY (trip_id, stop_sequence)
+    -- FOREIGN KEY (trip_id) REFERENCES trips(trip_id),
+    -- FOREIGN KEY (stop_id) REFERENCES stops(stop_id)
 
 );
 
@@ -122,16 +123,15 @@ CREATE TABLE IF NOT EXISTS stop_times(
 -- rowtype2: trips,trip_headsign,sv,Lundo-Tarvasjoki-Koskis,,Lieto-Tarvasjoki-Koski Tl
 
 CREATE TABLE IF NOT EXISTS stops_translations(
-    stop_id TEXT, --corresponds directly to the original finnish name in stops.csv so foreign key to stop_id 
+    stop_id INTEGER, --corresponds directly to the original finnish name in stops.csv so foreign key to stop_id 
     language text,
     translation text, -- the translation of stop_id in stops.csv
 
     PRIMARY KEY (stop_id, language),
     FOREIGN KEY (stop_id) REFERENCES stops(stop_id)
-    
 );
 
-CREATE TABLE IF NOT EXISTS trip_headsign_translations(
+CREATE TABLE IF NOT EXISTS trips_headsign_translations(
     original TEXT, -- maps to field_value, uncertain atm how to get to this, iguess just a costly search
     language VARCHAR(10),
     translation TEXT,
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS calendar_dates(
     date VARCHAR(8), --transform into date in service layer ig
     exception_type INTEGER, 
 
-    PRIMARY KEY (service_id));
+    PRIMARY KEY (service_id, date));
 
 
 --skipped - calendar.csv
@@ -172,6 +172,18 @@ CREATE TABLE IF NOT EXISTS calendar(
 
     PRIMARY KEY (service_id, start_date)
     );
+
+
+CREATE TABLE IF NOT EXISTS shapes(
+    shape_id INTEGER,
+    shape_pt_lat DOUBLE PRECISION,
+    shape_pt_lon DOUBLE PRECISION,
+    shape_pt_sequence INTEGER,
+    shape_dist_traveled INTEGER,
+
+    PRIMARY KEY (shape_id, shape_pt_sequence)
+);
+
 
 CREATE INDEX IF NOT EXISTS idx_stop_times_stop_dep ON stop_times (stop_id, departure_time);
 CREATE INDEX IF NOT EXISTS idx_trips_service ON trips (service_id);
