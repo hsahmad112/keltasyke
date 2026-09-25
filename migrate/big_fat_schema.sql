@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS trip_notes (
 -- columns:stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code
 
 CREATE TABLE IF NOT EXISTS stops(
-    stop_id INTEGER NOT NULL, 
+    stop_id text NOT NULL, -- THIS /HAS/ to be text, bc next_stoppointref from SIRI VM is a string, and I'd need to remember to cast. i guess ill have to remember regardless ughhh, its gonna be text and thats it!
     stop_code TEXT,
     stop_name VARCHAR(100),
     stop_desc text,
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS stop_times(
     trip_id text NOT NULL,
     arrival_time VARCHAR(8), -- this and departure_time goes past midnight, will need to parsed post pull from db
     departure_time VARCHAR(8),
-    stop_id INTEGER,
+    stop_id text,
     stop_sequence INTEGER NOT NULL,
     stop_headsign VARCHAR(150),
     pickup_type INTEGER,
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS stop_times(
 -- rowtype2: trips,trip_headsign,sv,Lundo-Tarvasjoki-Koskis,,Lieto-Tarvasjoki-Koski Tl
 
 CREATE TABLE IF NOT EXISTS stops_translations(
-    stop_id INTEGER, --corresponds directly to the original finnish name in stops.csv so foreign key to stop_id 
+    stop_id text, --corresponds directly to the original finnish name in stops.csv so foreign key to stop_id 
     language text,
     translation text, -- the translation of stop_id in stops.csv
 

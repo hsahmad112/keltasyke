@@ -4,7 +4,7 @@ import numpy as np
 from psycopg2.extras import execute_values
 from psycopg2 import sql
 from s02_init_db import connect_with_retry
-from s01_download_n_unzip import static_pth # type: ignore
+from s01_download_n_unzip import static_pth 
 
 
 #read all 11 .csv files rand transform into pandas datasets.
@@ -33,7 +33,7 @@ with conn.cursor() as cursor:
         (translations_df['field_name'] == 'stop_name')][['record_id', 'language', 'translation']].copy()
 
     stop_translations['record_id'] = ( #somehow turns into float values, and failing on FK with another table
-        pd.to_numeric(stop_translations['record_id'], errors='coerce').astype(int)
+        pd.to_numeric(stop_translations['record_id'], errors='coerce').astype(int).astype(str)
     )
     
     stop_translations = stop_translations.rename(columns={'record_id':'stop_id'})
