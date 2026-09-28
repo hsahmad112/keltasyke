@@ -14,9 +14,12 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   backend:
-    image: python:3.11-slim
+    build: ./backend
+    # image: python:3.11-slim
     container_name: main-kelta-backend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PWD}
@@ -27,10 +30,9 @@ services:
       - 8000:8000
     volumes:
       - ./backend:/backend
-    working_dir: /backend
-    command: > 
-      sh -c "pip install fastapi[standard] &&
-                uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-
+    # working_dir: /backend
+    # command: > 
+    #   sh -c "pip install --no-cache-dir -r requirements.txt &&
+    #             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 volumes:
   pgdata:
