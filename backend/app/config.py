@@ -12,5 +12,6 @@ class Settings:
         self.DB_NAME = os.getenv("DB_NAME")
         self.DB_USER = os.getenv("DB_USER")
         self.DB_PWD = os.getenv("DB_PWD")
+        self.SIRI_VM_URL = os.getenv("SIRI_VM_URL")
 
 settings = Settings()

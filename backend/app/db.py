@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
-import asyncpg
+import asyncpg, logging
 from .config import settings
 
 _pool = None
+
+logger = logging.getLogger("uvicorn.error")
 
 async def init_pool():
     global _pool
@@ -23,18 +25,24 @@ async def close_pool():
     global _pool
     if _pool is not None:
         await _pool.close()
-    print('Pool closed')
+        _pool = None
+        print('Pool\'s closed')
+
     
 
-async def get_preferences():
+async def load_preferences():
     async with get_conn() as conn:
         query = "Select * from preferences where id = 1"
         row = await conn.fetchrow(query)
         if row is None:
-            return {"id": 1, "lines": [], "stops": []} #fallback, should be backends responsibility
-        return row
+            return {"id": 1, "lines": [], "stops": [], "updated_at": None} #fallback, should be backends responsibility
+        res = dict(row)
+        res["lines"] = res["lines"] or []
+        res["stops"] = res["stops"] or []
+        logger.info(f"loaded user pref from db")
+        return res
 
-async def update_preferences(lines, stops):
+async def save_preferences(lines, stops):
     async with get_conn() as conn:
         query = """INSERT INTO preferences (id, lines, stops, updated_at) VALUES (1, $1, $2, NOW()) ON CONFLICT (id) 
         DO UPDATE SET
@@ -44,14 +52,17 @@ async def update_preferences(lines, stops):
         RETURNING *;
         """
         row = await conn.fetchrow(query, lines, stops)
-        return row
+        logger.info(f"saved user pref to db")
 
+        return dict(row) if row else None
+ 
 
 async def get_recent_alerts(limit, since):
     async with get_conn() as conn:
-        query = """SELECT * FROM service_alerts 
-        WHERE $2 is NULL OR created_at > $2 
+        query = """SELECT id, summary_en, raw_text, created_at FROM service_alerts 
+        WHERE $2::timestamptz is NULL OR created_at > $2::timestamptz
         ORDER BY created_at DESC 
         LIMIT $1 ;"""
         rows = await conn.fetch(query, limit, since)
-        return rows
+        logger.info(f"retrieved recent alerts")
+        return [dict(r) for r in rows]

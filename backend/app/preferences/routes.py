@@ -1,22 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Optional
-from app.db import get_preferences, update_preferences
+from typing import List
+from app.db import load_preferences, save_preferences
+from app.preferences.cache import preferences_cache
 
 router = APIRouter(prefix="/preferences", tags=["preferences"] )
 
 
-class PrefencesUpdate(BaseModel):
+class PreferencesUpdate(BaseModel):
     lines: List[str]
-    stops: List[int]
+    stops: List[str]
 
 
 @router.get("")
 async def read_preferences():
-    return await get_preferences()
+    return await load_preferences()
 
 @router.put("")
-async def save_preferences(body: PrefencesUpdate):
+async def put_preferences(body: PreferencesUpdate):
     print(f" This is the actual {body} recieved ")
-    return await update_preferences(body.lines, body.stops)
+
+    res = await save_preferences(body.lines, body.stops) #method returns RETURNING *, and thats what res is
+
+    preferences_cache.set_preferences(res)
+    return preferences_cache.get_preferences()
+
     
